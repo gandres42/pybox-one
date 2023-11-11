@@ -1,9 +1,12 @@
 import pybox
 
+def test():
+    print(pybox.get_r_trigger())
+
 pybox.init()
+pybox.set_callback_r_trigger(test)
 try:
     while True:
-        # print(pybox.get_r_joy_x())
         pass
 except KeyboardInterrupt:
     pybox.stop()

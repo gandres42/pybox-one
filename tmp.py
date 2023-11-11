@@ -1,24 +1,25 @@
-values = {
-    'l_joy_x': 0,
-    'l_joy_y': 0,
-    'r_joy_x': 0,
-    'r_joy_y': 0,
-    'd_pad_x': 0,
-    'd_pad_y': 0,
-    'lt': 0,
-    'rt': 0,
-    'lb': 0,
-    'rb': 0,
-    'select': 0,
-    'start': 0,
-    'r_joy_button': 0,
-    'l_joy_button': 0,
-    'a_button': 0,
-    'b_button': 0,
-    'x_button': 0,
-    'y_button': 0
+_callbacks = {
+    'l_joy_x': None,
+    'l_joy_y': None,
+    'r_joy_x': None,
+    'r_joy_y': None,
+    'd_pad_x': None,
+    'd_pad_y': None,
+    'l_trigger': None,
+    'r_trigger': None,
+    'l_bumper': None,
+    'r_bumper': None,
+    'select': None,
+    'start': None,
+    'r_joy_button': None,
+    'l_joy_button': None,
+    'a_button': None,
+    'b_button': None,
+    'x_button': None,
+    'y_button': None
 }
 
-# for key in values.keys():
-#     print('def get_' + key + "():")
-#     print('\treturn values[\'' + key + '\']\n')
+
+for key in _callbacks.keys():
+    print('def set_callback_' + key + "(func):")
+    print('\t_callbacks[\'' + key + '\'] = func\n')
