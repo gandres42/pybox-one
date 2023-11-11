@@ -16,10 +16,10 @@ values = {
     'start': 0,
     'r_joy_button': 0,
     'l_joy_button': 0,
-    'a': 0,
-    'b': 0,
-    'x': 0,
-    'y': 0
+    'a_button': 0,
+    'b_button': 0,
+    'x_button': 0,
+    'y_button': 0
 }
 
 _listen_thread = None
@@ -31,7 +31,6 @@ def listen():
     print(_active)
     while _active:
         for event in pygame.event.get():
-            # print(event.dict)
             if 'joy' in event.dict:
                 if 'axis' in event.dict:
                     if event.dict['axis'] == 0:
@@ -49,25 +48,25 @@ def listen():
 
                 if 'button' in event.dict:
                     if event.dict['button'] == 0:
-                        if values['a'] == 0:
-                            values['a'] = 1
+                        if values['a_button'] == 0:
+                            values['a_button'] = 1
                         else:
-                            values['a'] = 0
+                            values['a_button'] = 0
                     if event.dict['button'] == 1:
-                        if values['b'] == 0:
-                            values['b'] = 1
+                        if values['b_button'] == 0:
+                            values['b_button'] = 1
                         else:
-                            values['b'] = 0
+                            values['b_button'] = 0
                     if event.dict['button'] == 2:
-                        if values['x'] == 0:
-                            values['x'] = 1
+                        if values['x_button'] == 0:
+                            values['x_button'] = 1
                         else:
-                            values['x'] = 0
+                            values['x_button'] = 0
                     if event.dict['button'] == 3:
-                        if values['y'] == 0:
-                            values['y'] = 1
+                        if values['y_button'] == 0:
+                            values['y_button'] = 1
                         else:
-                            values['y'] = 0
+                            values['y_button'] = 0
                     if event.dict['button'] == 4:
                         if values['lb'] == 0:
                             values['lb'] = 1
@@ -102,7 +101,7 @@ def listen():
                     values['d_pad_x'] = event.dict['value'][0]
                     values['d_pad_y'] = event.dict['value'][1]
                 # print(values['rb'])
-                print(values)
+                # print(values)
 
 def init():
     global _listen_thread, _active, _controller
@@ -120,3 +119,57 @@ def stop():
     if _listen_thread is not None:
         _listen_thread.join()
         _listen_thread = None
+
+def get_l_joy_x():
+        return values['l_joy_x']
+
+def get_l_joy_y():
+        return values['l_joy_y']
+
+def get_r_joy_x():
+        return values['r_joy_x']
+
+def get_r_joy_y():
+        return values['r_joy_y']
+
+def get_d_pad_x():
+        return values['d_pad_x']
+
+def get_d_pad_y():
+        return values['d_pad_y']
+
+def get_lt():
+        return values['lt']
+
+def get_rt():
+        return values['rt']
+
+def get_lb():
+        return values['lb']
+
+def get_rb():
+        return values['rb']
+
+def get_select():
+        return values['select']
+
+def get_start():
+        return values['start']
+
+def get_r_joy_button():
+        return values['r_joy_button']
+
+def get_l_joy_button():
+        return values['l_joy_button']
+
+def get_a_button():
+        return values['a_button']
+
+def get_b_button():
+        return values['b_button']
+
+def get_x_button():
+        return values['x_button']
+
+def get_y_button():
+        return values['y_button']

@@ -1,7 +1,8 @@
 import pybox
 
 pybox.init()
-print("hello!")
-while True:
-    pass
-pybox.stop()
+try:
+    while True:
+        print(pybox.get_r_joy_x())
+except KeyboardInterrupt:
+    pybox.stop()
