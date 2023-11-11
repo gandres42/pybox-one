@@ -19,7 +19,6 @@ values = {
     'y_button': 0
 }
 
-for key in values.keys():
-    print('def get_' + key + "():")
-    print('\treturn values[\'' + key + '\']\n')
-    # print(key)
+# for key in values.keys():
+#     print('def get_' + key + "():")
+#     print('\treturn values[\'' + key + '\']\n')
