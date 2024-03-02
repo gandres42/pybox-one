@@ -200,7 +200,7 @@ class pybox:
             return self.l_joy_button.value
 
     def get_a_button(self):
-            return self.a_button
+            return self.a_button.value
 
     def get_b_button(self):
             return self.b_button.value
