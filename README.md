@@ -9,4 +9,4 @@ pip install .
 ```
 
 ### Use
-See example.py for an example of lirbary use and functionality.
+See example.py
