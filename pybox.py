@@ -1,266 +1,266 @@
 import pygame
-import threading
+from multiprocessing import Process, Value, Lock, Event, Queue
+from threading import Thread
 
-_values = {
-    'l_joy_x': 0,
-    'l_joy_y': 0,
-    'r_joy_x': 0,
-    'r_joy_y': 0,
-    'd_pad_x': 0,
-    'd_pad_y': 0,
-    'l_trigger': 0,
-    'r_trigger': 0,
-    'l_bumper': 0,
-    'r_bumper': 0,
-    'select': 0,
-    'start': 0,
-    'r_joy_button': 0,
-    'l_joy_button': 0,
-    'a_button': 0,
-    'b_button': 0,
-    'x_button': 0,
-    'y_button': 0
-}
+class pybox:
+    def __init__(self) -> None:
+        self.l_joy_x = Value('d', 0)
+        self.l_joy_y = Value('d', 0)
+        self.r_joy_x = Value('d', 0)
+        self.r_joy_y = Value('d', 0)
+        self.d_pad_x = Value('d', 0)
+        self.d_pad_y = Value('d', 0)
+        self.l_trigger = Value('d', 0)
+        self.r_trigger = Value('d', 0)
+        self.l_bumper = Value('d', 0)
+        self.r_bumper = Value('d', 0)
+        self.select = Value('d', 0)
+        self.start = Value('d', 0)
+        self.r_joy_button = Value('d', 0)
+        self.l_joy_button = Value('d', 0)
+        self.a_button = Value('d', 0)
+        self.b_button = Value('d', 0)
+        self.x_button = Value('d', 0)
+        self.y_button = Value('d', 0)
 
-_callbacks = {
-    'l_joy_x': None,
-    'l_joy_y': None,
-    'r_joy_x': None,
-    'r_joy_y': None,
-    'd_pad_x': None,
-    'd_pad_y': None,
-    'l_trigger': None,
-    'r_trigger': None,
-    'l_bumper': None,
-    'r_bumper': None,
-    'select': None,
-    'start': None,
-    'r_joy_button': None,
-    'l_joy_button': None,
-    'a_button': None,
-    'b_button': None,
-    'x_button': None,
-    'y_button': None
-}
+        self._callbacks = {
+            'l_joy_x': None,
+            'l_joy_y': None,
+            'r_joy_x': None,
+            'r_joy_y': None,
+            'd_pad_x': None,
+            'd_pad_y': None,
+            'l_trigger': None,
+            'r_trigger': None,
+            'l_bumper': None,
+            'r_bumper': None,
+            'select': None,
+            'start': None,
+            'r_joy_button': None,
+            'l_joy_button': None,
+            'a_button': None,
+            'b_button': None,
+            'x_button': None,
+            'y_button': None
+        }
 
+        pygame.init()
+        pygame.joystick.init()
+        _controller = pygame.joystick.Joystick(0)
+        _controller.init()
 
-_listen_thread = None
-_active = False
-_controller = None
+        self._stop_flag = Event()
+        self._listen_process = Process(target=self._ultimate_c_listen)
+        self._callback_thread = Thread(target=self._callback_listen, daemon=True)
+        self._val_lock = Lock()
+        self._callback_queue = Queue()
+        self._callback_thread.start()
+        self._listen_process.start()
 
-def listen():
-    while _active:
-        for event in pygame.event.get():
-            if 'joy' in event.dict:
-                if 'axis' in event.dict:
-                    if event.dict['axis'] == 0:
-                        _values['l_joy_x'] = round(event.dict['value'], 3)
-                        _call('l_joy_x')
-                    if event.dict['axis'] == 1:
-                        _values['l_joy_y'] = round(event.dict['value'] * -1, 3)
-                        _call('l_joy_y')
-                    if event.dict['axis'] == 2:
-                        _values['l_trigger'] = round((event.dict['value'] + 1) / 2, 3)
-                        _call('l_trigger')
-                    if event.dict['axis'] == 3:
-                        _values['r_joy_x'] = round(event.dict['value'], 3)
-                        _call('r_joy_x')
-                    if event.dict['axis'] == 4:
-                        _values['r_joy_y'] = round(event.dict['value'] * -1, 3)
-                        _call('r_joy_y')
-                    if event.dict['axis'] == 5:
-                        _values['r_trigger'] = round((event.dict['value'] + 1) / 2, 3)
-                        _call('r_trigger')
+    def __del__(self):
+        self._stop_flag.set()
 
-                if 'button' in event.dict:
-                    if event.dict['button'] == 0:
-                        if _values['a_button'] == 0:
-                            _values['a_button'] = 1
-                        else:
-                            _values['a_button'] = 0
-                        _call('a_button')
-                    if event.dict['button'] == 1:
-                        if _values['b_button'] == 0:
-                            _values['b_button'] = 1
-                        else:
-                            _values['b_button'] = 0
-                        _call('a_button')
-                    if event.dict['button'] == 2:
-                        if _values['x_button'] == 0:
-                            _values['x_button'] = 1
-                        else:
-                            _values['x_button'] = 0
-                        _call('x_button')
-                    if event.dict['button'] == 3:
-                        if _values['y_button'] == 0:
-                            _values['y_button'] = 1
-                        else:
-                            _values['y_button'] = 0
-                        _call('y_button')
-                    if event.dict['button'] == 4:
-                        if _values['l_bumper'] == 0:
-                            _values['l_bumper'] = 1
-                        else:
-                            _values['l_bumper'] = 0
-                        _call('l_bumper')
-                    if event.dict['button'] == 5:
-                        if _values['r_bumper'] == 0:
-                            _values['r_bumper'] = 1
-                        else:
-                            _values['r_bumper'] = 0
-                        _call('r_bumper')
-                    if event.dict['button'] == 6:
-                        if _values['select'] == 0:
-                            _values['select'] = 1
-                        else:
-                            _values['select'] = 0
-                        _call('select')
-                    if event.dict['button'] == 7:
-                        if _values['start'] == 0:
-                            _values['start'] = 1
-                        else:
-                            _values['start'] = 0
-                    if event.dict['button'] == 9:
-                        if _values['l_joy_button'] == 0:
-                            _values['l_joy_button'] = 1
-                        else:
-                            _values['l_joy_button'] = 0
-                        _call('l_joy_button')
-                    if event.dict['button'] == 10:
-                        if _values['r_joy_button'] == 0:
-                            _values['r_joy_button'] = 1
-                        else:
-                            _values['r_joy_button'] = 0
-                        _call('r_joy_button')
-                if 'hat' in event.dict:
-                    _values['d_pad_x'] = event.dict['value'][0]
-                    _values['d_pad_y'] = event.dict['value'][1]
+    def _call(self, key):
+        self._callback_queue.put(key)
+        
 
-def _call(key):
-    if _callbacks[key] is not None:
-          _callbacks[key]()
+    def _callback_listen(self):
+        while not self._stop_flag.is_set():
+            func = self._callback_queue.get()
+            if self._callbacks[func] is not None:
+                self._callbacks[func]()
 
-def init():
-    global _listen_thread, _active, _controller
-    pygame.init()
-    pygame.joystick.init()
-    _controller = pygame.joystick.Joystick(0)
-    _controller.init()
-    _listen_thread = threading.Thread(target=listen, daemon=True)
-    _active = True
-    _listen_thread.start()
+    def _ultimate_c_listen(self):
+        while not self._stop_flag.is_set():
+            for event in pygame.event.get():
+                if 'joy' in event.dict:
+                    if 'axis' in event.dict:
+                        if event.dict['axis'] == 0:
+                            self.l_joy_x.value = round(event.dict['value'], 3)
+                            self._call('l_joy_x')
+                        if event.dict['axis'] == 1:
+                            self.l_joy_y.value = round(event.dict['value'] * -1, 3)
+                            self._call('l_joy_y')
+                        if event.dict['axis'] == 2:
+                            self.r_joy_x.value = round(event.dict['value'], 3)
+                            self._call('r_joy_x')
+                        if event.dict['axis'] == 3:
+                            self.r_joy_y.value = round(event.dict['value'] * -1, 3)
+                            self._call('r_joy_y')
+                        if event.dict['axis'] == 4:
+                            self.r_trigger.value = round((event.dict['value'] + 1) / 2, 3)
+                            self._call('r_trigger')
+                        if event.dict['axis'] == 5:
+                            self.l_trigger.value = round((event.dict['value'] + 1) / 2, 3)
+                            self._call('l_trigger')
+                    if 'button' in event.dict:
+                        if event.dict['button'] == 0:
+                            if self.a_button.value == 0:
+                                self.a_button.value = 1
+                            else:
+                                self.a_button.value = 0
+                            self._call('a_button')
+                        if event.dict['button'] == 1:
+                            if self.b_button.value == 0:
+                                self.b_button.value = 1
+                            else:
+                                self.b_button.value = 0
+                            self._call('a_button')
+                        if event.dict['button'] == 2:
+                            if self.x_button.value == 0:
+                                self.x_button.value = 1
+                            else:
+                                self.x_button.value = 0
+                            self._call('x_button')
+                        if event.dict['button'] == 3:
+                            if self.y_button.value == 0:
+                                self.y_button.value = 1
+                            else:
+                                self.y_button.value = 0
+                            self._call('y_button')
+                        if event.dict['button'] == 4:
+                            if self.l_bumper.value == 0:
+                                self.l_bumper.value = 1
+                            else:
+                                self.l_bumper.value = 0
+                            self._call('l_bumper')
+                        if event.dict['button'] == 5:
+                            if self.r_bumper.value == 0:
+                                self.r_bumper.value = 1
+                            else:
+                                self.r_bumper.value = 0
+                            self._call('r_bumper')
+                        if event.dict['button'] == 6:
+                            if self.select.value == 0:
+                                self.select.value = 1
+                            else:
+                                self.select.value = 0
+                            self._call('select')
+                        if event.dict['button'] == 7:
+                            if self.start.value == 0:
+                                self.start.value = 1
+                            else:
+                                self.start.value = 0
+                        if event.dict['button'] == 9:
+                            if self.l_joy_button.value == 0:
+                                self.l_joy_button.value = 1
+                            else:
+                                self.l_joy_button.value = 0
+                            self._call('l_joy_button')
+                        if event.dict['button'] == 10:
+                            if self.r_joy_button.value == 0:
+                                self.r_joy_button.value = 1
+                            else:
+                                self.r_joy_button.value = 0
+                            self._call('r_joy_button')
+                    if 'hat' in event.dict:
+                        self.d_pad_x.value = event.dict['value'][0]
+                        self.d_pad_y.value = event.dict['value'][1]
 
-def stop():
-    global _listen_thread, _active
-    _active = False
-    if _listen_thread is not None:
-        _listen_thread.join()
-        _listen_thread = None
+    def get_l_joy_x(self):
+            return self.l_joy_x.value
 
-def get_l_joy_x():
-        return _values['l_joy_x']
+    def get_l_joy_y(self):
+            return self.l_joy_y.value
 
-def get_l_joy_y():
-        return _values['l_joy_y']
+    def get_r_joy_x(self):
+            return self.r_joy_x.value
 
-def get_r_joy_x():
-        return _values['r_joy_x']
+    def get_r_joy_y(self):
+            return self.r_joy_y.value
 
-def get_r_joy_y():
-        return _values['r_joy_y']
+    def get_d_pad_x(self):
+            return self.d_pad_x.value
 
-def get_d_pad_x():
-        return _values['d_pad_x']
+    def get_d_pad_y(self):
+            return self.d_pad_y.value
 
-def get_d_pad_y():
-        return _values['d_pad_y']
+    def get_l_trigger(self):
+            return self.l_trigger.value
 
-def get_l_trigger():
-        return _values['l_trigger']
+    def get_r_trigger(self):
+            return self.r_trigger.value
 
-def get_r_trigger():
-        return _values['r_trigger']
+    def get_l_bumper(self):
+            return self.l_bumper.value
 
-def get_l_bumper():
-        return _values['l_bumper']
+    def get_r_bumper(self):
+            return self.r_bumper.value
 
-def get_r_bumper():
-        return _values['r_bumper']
+    def get_select(self):
+            return self.select.value
 
-def get_select():
-        return _values['select']
+    def get_start(self):
+            return self.start.value
 
-def get_start():
-        return _values['start']
+    def get_r_joy_button(self):
+            return self.r_joy_button.value
 
-def get_r_joy_button():
-        return _values['r_joy_button']
+    def get_l_joy_button(self):
+            return self.l_joy_button.value
 
-def get_l_joy_button():
-        return _values['l_joy_button']
+    def get_a_button(self):
+            return self.a_button
 
-def get_a_button():
-        return _values['a_button']
+    def get_b_button(self):
+            return self.b_button.value
 
-def get_b_button():
-        return _values['b_button']
+    def get_x_button(self):
+            return self.x_button.value
 
-def get_x_button():
-        return _values['x_button']
+    def get_y_button(self):
+            return self.y_button.value
 
-def get_y_button():
-        return _values['y_button']
+    def set_callback_l_joy_x(self, func):
+            self._callbacks['l_joy_x'] = func
 
-def set_callback_l_joy_x(func):
-        _callbacks['l_joy_x'] = func
+    def set_callback_l_joy_y(self, func):
+            self._callbacks['l_joy_y'] = func
 
-def set_callback_l_joy_y(func):
-        _callbacks['l_joy_y'] = func
+    def set_callback_r_joy_x(self, func):
+            self._callbacks['r_joy_x'] = func
 
-def set_callback_r_joy_x(func):
-        _callbacks['r_joy_x'] = func
+    def set_callback_r_joy_y(self, func):
+            self._callbacks['r_joy_y'] = func
 
-def set_callback_r_joy_y(func):
-        _callbacks['r_joy_y'] = func
+    def set_callback_d_pad_x(self, func):
+            self._callbacks['d_pad_x'] = func
 
-def set_callback_d_pad_x(func):
-        _callbacks['d_pad_x'] = func
+    def set_callback_d_pad_y(self, func):
+            self._callbacks['d_pad_y'] = func
 
-def set_callback_d_pad_y(func):
-        _callbacks['d_pad_y'] = func
+    def set_callback_l_trigger(self, func):
+            self._callbacks['l_trigger'] = func
 
-def set_callback_l_trigger(func):
-        _callbacks['l_trigger'] = func
+    def set_callback_r_trigger(self, func):
+            self._callbacks['r_trigger'] = func
 
-def set_callback_r_trigger(func):
-        _callbacks['r_trigger'] = func
+    def set_callback_l_bumper(self, func):
+            self._callbacks['l_bumper'] = func
 
-def set_callback_l_bumper(func):
-        _callbacks['l_bumper'] = func
+    def set_callback_r_bumper(self, func):
+            self._callbacks['r_bumper'] = func
 
-def set_callback_r_bumper(func):
-        _callbacks['r_bumper'] = func
+    def set_callback_select(self, func):
+            self._callbacks['select'] = func
 
-def set_callback_select(func):
-        _callbacks['select'] = func
+    def set_callback_start(self, func):
+            self._callbacks['start'] = func
 
-def set_callback_start(func):
-        _callbacks['start'] = func
+    def set_callback_r_joy_button(self, func):
+            self._callbacks['r_joy_button'] = func
 
-def set_callback_r_joy_button(func):
-        _callbacks['r_joy_button'] = func
+    def set_callback_l_joy_button(self, func):
+            self._callbacks['l_joy_button'] = func
 
-def set_callback_l_joy_button(func):
-        _callbacks['l_joy_button'] = func
+    def set_callback_a_button(self, func):
+            self._callbacks['a_button'] = func
 
-def set_callback_a_button(func):
-        _callbacks['a_button'] = func
+    def set_callback_b_button(self, func):
+            self._callbacks['b_button'] = func
 
-def set_callback_b_button(func):
-        _callbacks['b_button'] = func
+    def set_callback_x_button(self, func):
+            self._callbacks['x_button'] = func
 
-def set_callback_x_button(func):
-        _callbacks['x_button'] = func
-
-def set_callback_y_button(func):
-        _callbacks['y_button'] = func
+    def set_callback_y_button(self, func):
+        self._callbacks['y_button'] = func
