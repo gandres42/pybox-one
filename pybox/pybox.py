@@ -73,6 +73,7 @@ class UltimateC:
     def _ultimate_c_listen(self):
         while not self._stop_flag.is_set():
             for event in pygame.event.get():
+                # print(event)
                 if 'joy' in event.dict:
                     if 'axis' in event.dict:
                         if event.dict['axis'] == 0:
@@ -105,49 +106,49 @@ class UltimateC:
                                 self.b_button.value = 1
                             else:
                                 self.b_button.value = 0
-                            self._call('a_button')
-                        if event.dict['button'] == 2:
+                            self._call('b_button')
+                        if event.dict['button'] == 3:
                             if self.x_button.value == 0:
                                 self.x_button.value = 1
                             else:
                                 self.x_button.value = 0
                             self._call('x_button')
-                        if event.dict['button'] == 3:
+                        if event.dict['button'] == 4:
                             if self.y_button.value == 0:
                                 self.y_button.value = 1
                             else:
                                 self.y_button.value = 0
                             self._call('y_button')
-                        if event.dict['button'] == 4:
+                        if event.dict['button'] == 6:
                             if self.l_bumper.value == 0:
                                 self.l_bumper.value = 1
                             else:
                                 self.l_bumper.value = 0
                             self._call('l_bumper')
-                        if event.dict['button'] == 5:
+                        if event.dict['button'] == 7:
                             if self.r_bumper.value == 0:
                                 self.r_bumper.value = 1
                             else:
                                 self.r_bumper.value = 0
                             self._call('r_bumper')
-                        if event.dict['button'] == 6:
+                        if event.dict['button'] == 10:
                             if self.select.value == 0:
                                 self.select.value = 1
                             else:
                                 self.select.value = 0
                             self._call('select')
-                        if event.dict['button'] == 7:
+                        if event.dict['button'] == 11:
                             if self.start.value == 0:
                                 self.start.value = 1
                             else:
                                 self.start.value = 0
-                        if event.dict['button'] == 9:
+                        if event.dict['button'] == 13:
                             if self.l_joy_button.value == 0:
                                 self.l_joy_button.value = 1
                             else:
                                 self.l_joy_button.value = 0
                             self._call('l_joy_button')
-                        if event.dict['button'] == 10:
+                        if event.dict['button'] == 14:
                             if self.r_joy_button.value == 0:
                                 self.r_joy_button.value = 1
                             else:
