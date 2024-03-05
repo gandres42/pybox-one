@@ -156,6 +156,8 @@ class UltimateC:
                     if 'hat' in event.dict:
                         self.d_pad_x.value = event.dict['value'][0]
                         self.d_pad_y.value = event.dict['value'][1]
+                        self._call('d_pad_y')
+                        self._call('d_pad_x')
 
     def get_l_joy_x(self):
             return self.l_joy_x.value
